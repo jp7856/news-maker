@@ -416,6 +416,7 @@ async function loadAll() {
     document.getElementById('spin-msg').textContent = `${tab.label} 불러오는 중...`;
     try {
       const rows = await fetchTab(tab);
+      rows.sort((a,b)=>(b.dc>a.dc?1:b.dc<a.dc?-1:0));
       all = all.concat(rows);
       document.getElementById('b-' + tab.key).textContent = rows.length;
     } catch(e) {
@@ -441,6 +442,7 @@ async function doUpload() {
     pb.style.width=`${Math.round((i/TABS.length)*90)}%`;
     try{
       const rows=await fetchTab(tab);
+      rows.sort((a,b)=>(b.dc>a.dc?1:b.dc<a.dc?-1:0));
       all=all.concat(rows); counts[tab.key]=rows.length; total+=rows.length;
       document.getElementById('b-'+tab.key).textContent=rows.length;
     }catch{counts[tab.key]=0;}
