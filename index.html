@@ -592,13 +592,7 @@ function buildMediaCards(){
       cards.push(a);
     }
   });
-  // 나머지 2칸: 전체에서 랜덤 (이미 선택된 것 제외)
-  const usedIdx=new Set(cards.map(a=>all.indexOf(a)));
-  const pool=all.filter((_,i)=>!usedIdx.has(i));
-  for(let i=0;i<2&&pool.length;i++){
-    const ri=Math.floor(Math.random()*pool.length);
-    cards.push(pool.splice(ri,1)[0]);
-  }
+  // 매체별 4카드만 사용
 
   return cards.map(a=>{
     const idx=all.indexOf(a);
