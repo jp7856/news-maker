@@ -407,13 +407,7 @@ async function fetchTab(tab) {
       url:   cols[7]||'',
       media: tab.key
     }))
-    .sort((a, b) => {
-      if (a.dc && b.dc) return b.dc.localeCompare(a.dc);
-      const numA = parseInt((a.date||'').match(/\d+/)?.[0]||'0');
-      const numB = parseInt((b.date||'').match(/\d+/)?.[0]||'0');
-      return numB - numA;
-    });
-}
+;
 
 async function loadAll() {
   all = [];
@@ -422,7 +416,6 @@ async function loadAll() {
     document.getElementById('spin-msg').textContent = `${tab.label} 불러오는 중...`;
     try {
       const rows = await fetchTab(tab);
-      rows.sort((a,b)=>(b.dc>a.dc?1:b.dc<a.dc?-1:0));
       all = all.concat(rows);
       document.getElementById('b-' + tab.key).textContent = rows.length;
     } catch(e) {
@@ -430,6 +423,15 @@ async function loadAll() {
       document.getElementById('b-' + tab.key).textContent = '!';
     }
   }
+  // 날짜 내림차순 → 같은 날짜면 매체 순서(kinder→kids→junior→times)
+  const mediaOrder = {kinder:0, kids:1, junior:2, times:3};
+  all.sort((a, b) => {
+    const dateA = a.dc || a.date || '';
+    const dateB = b.dc || b.date || '';
+    if (dateB > dateA) return 1;
+    if (dateB < dateA) return -1;
+    return (mediaOrder[a.media]||0) - (mediaOrder[b.media]||0);
+  });
   document.getElementById('b-all').textContent = all.length;
   document.getElementById('spin-area').style.display = 'none';
   render(all);
@@ -448,11 +450,17 @@ async function doUpload() {
     pb.style.width=`${Math.round((i/TABS.length)*90)}%`;
     try{
       const rows=await fetchTab(tab);
-      rows.sort((a,b)=>(b.dc>a.dc?1:b.dc<a.dc?-1:0));
       all=all.concat(rows); counts[tab.key]=rows.length; total+=rows.length;
       document.getElementById('b-'+tab.key).textContent=rows.length;
     }catch{counts[tab.key]=0;}
   }
+  // 날짜 내림차순 → 같은 날짜면 매체 순서
+  const mediaOrder={kinder:0,kids:1,junior:2,times:3};
+  all.sort((a,b)=>{
+    const da=a.dc||a.date||'', db=b.dc||b.date||'';
+    if(db>da)return 1; if(db<da)return -1;
+    return(mediaOrder[a.media]||0)-(mediaOrder[b.media]||0);
+  });
   document.getElementById('b-all').textContent=total;
   pb.style.width='100%'; pl.textContent='완료!';
   btn.disabled=false; btn.textContent='🔄 기사 업로드 (원클릭)';
