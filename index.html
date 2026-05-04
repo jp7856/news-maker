@@ -530,13 +530,9 @@ function render(arts){
   }
 
   if(currentTab==='all'){
-    const photoArts=arts.filter(a=>a.sec==='Photo News');
-    const normalArts=arts.filter(a=>a.sec!=='Photo News');
-    const grid=normalArts.slice(0,6), list=normalArts.slice(6);
     wrap.innerHTML=
-      mkTopLayout(photoArts)+
-      (grid.length?`<div class="grid-wrap"><div class="grid-3">${grid.map(mkGrid).join('')}</div></div>`:'')+
-      (list.length?`<div class="list-wrap">${list.map(mkList).join('')}</div>`:'');
+      mkTopLayout()+
+      mkAllList();
   } else {
     const sorted=[...arts].sort((a,b)=>b.date>a.date?1:b.date<a.date?-1:0);
     wrap.innerHTML=
@@ -544,11 +540,67 @@ function render(arts){
   }
 }
 
-function mkTopLayout(photoArts){
-  const mediaKeys=['kinder','kids','junior','times'];
-  const mediaCards=mediaKeys.map(m=>{
-    const a=all.find(x=>x.media===m&&x.sec!=='Photo News')||all.find(x=>x.media===m);
-    if(!a)return'';
+// 전체 기사 발행일+매체 순서 정렬 (발행일 역순, 같은 날은 kinder>kids>junior>times)
+function mkAllList(){
+  const ORDER={kinder:0,kids:1,junior:2,times:3};
+  const sorted=[...all].sort((a,b)=>{
+    // 날짜 추출: [244호] 2026.05.04 → 2026.05.04
+    const dateA=(a.date||'').match(/\d{4}\.\d{2}\.\d{2}/);
+    const dateB=(b.date||'').match(/\d{4}\.\d{2}\.\d{2}/);
+    const dA=dateA?dateA[0]:'0000.00.00';
+    const dB=dateB?dateB[0]:'0000.00.00';
+    if(dB!==dA) return dB>dA?1:-1;
+    return (ORDER[a.media]||0)-(ORDER[b.media]||0);
+  });
+  return`<div class="list-wrap">${sorted.map(mkList).join('')}</div>`;
+}
+
+// 롤링 상태 관리
+let rollingOffset=0;
+let rollingTimer=null;
+
+function startRolling(){
+  if(rollingTimer)clearInterval(rollingTimer);
+  rollingTimer=setInterval(()=>{
+    rollingOffset++;
+    if(currentTab==='all'){
+      document.getElementById('media-grid-wrap').innerHTML=buildMediaCards();
+    }
+  },5*60*1000); // 5분
+}
+
+function buildMediaCards(){
+  const ORDER=['kinder','kids','junior','times'];
+  // 매체별 기사 목록 (최신호 기준)
+  const byMedia={};
+  ORDER.forEach(m=>{
+    byMedia[m]=[...all.filter(x=>x.media===m&&x.sec!=='Photo News')];
+    // 호수 내림차순
+    byMedia[m].sort((a,b)=>{
+      const da=((a.date||'').match(/\d{4}\.\d{2}\.\d{2}/)||['0'])[0];
+      const db=((b.date||'').match(/\d{4}\.\d{2}\.\d{2}/)||['0'])[0];
+      return db>da?1:-1;
+    });
+  });
+
+  // 6칸: 매체별 1개씩(롤링offset 적용) + 랜덤 2개
+  const cards=[];
+  ORDER.forEach(m=>{
+    const arr=byMedia[m];
+    if(arr.length){
+      const a=arr[rollingOffset%arr.length];
+      cards.push(a);
+    }
+  });
+  // 나머지 2칸: 전체에서 랜덤 (이미 선택된 것 제외)
+  const usedIdx=new Set(cards.map(a=>all.indexOf(a)));
+  const pool=all.filter((_,i)=>!usedIdx.has(i));
+  for(let i=0;i<2&&pool.length;i++){
+    const ri=Math.floor(Math.random()*pool.length);
+    cards.push(pool.splice(ri,1)[0]);
+  }
+
+  return cards.map(a=>{
     const idx=all.indexOf(a);
     const bc=MEDIA_CLS[a.media]||'',ml=MEDIA_LBL[a.media]||'';
     const imgH=a.img&&a.img.startsWith('http')
@@ -564,6 +616,11 @@ function mkTopLayout(photoArts){
       </div>
     </div>`;
   }).join('');
+}
+
+function mkTopLayout(){
+  const mediaCards=buildMediaCards();
+  startRolling();
 
   const pnItems=photoArts.map(a=>{
     const idx=all.indexOf(a);
@@ -581,7 +638,7 @@ function mkTopLayout(photoArts){
   }).join('');
 
   return`<div class="top-layout">
-    <div class="media-grid">${mediaCards}</div>
+    <div class="media-grid" id="media-grid-wrap">${mediaCards}</div>
     <div class="right-col">
       <div class="login-buy">
         <div class="hero-box hero-login">
