@@ -407,7 +407,12 @@ async function fetchTab(tab) {
       url:   cols[7]||'',
       media: tab.key
     }))
-    .reverse(); // 최신 기사가 맨 위로
+    .sort((a, b) => {
+      if (a.dc && b.dc) return b.dc.localeCompare(a.dc);
+      const numA = parseInt((a.date||'').match(/\d+/)?.[0]||'0');
+      const numB = parseInt((b.date||'').match(/\d+/)?.[0]||'0');
+      return numB - numA;
+    });
 }
 
 async function loadAll() {
