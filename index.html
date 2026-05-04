@@ -622,6 +622,7 @@ function mkTopLayout(){
   const mediaCards=buildMediaCards();
   startRolling();
 
+  const photoArts=all.filter(a=>a.sec==='Photo News');
   const pnItems=photoArts.map(a=>{
     const idx=all.indexOf(a);
     const bc=MEDIA_CLS[a.media]||'',ml=MEDIA_LBL[a.media]||'';
