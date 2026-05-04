@@ -538,12 +538,10 @@ function render(arts){
       (grid.length?`<div class="grid-wrap"><div class="grid-3">${grid.map(mkGrid).join('')}</div></div>`:'')+
       (list.length?`<div class="list-wrap">${list.map(mkList).join('')}</div>`:'');
   } else {
-    const[main,...rest]=arts;
-    const sides=rest.slice(0,4), grid=rest.slice(4,10), list=rest.slice(10);
+    // 날짜 내림차순 정렬
+    const sorted=[...arts].sort((a,b)=>b.date>a.date?1:b.date<a.date?-1:0);
     wrap.innerHTML=
-      `<div class="top-grid">${mkMain(main)}<div class="side-list">${sides.map(mkSide).join('')}</div></div>`+
-      (grid.length?`<div class="grid-wrap"><div class="grid-3">${grid.map(mkGrid).join('')}</div></div>`:'')+
-      (list.length?`<div class="list-wrap">${list.map(mkList).join('')}</div>`:'');
+      `<div class="grid-wrap"><div class="grid-3">${sorted.map(mkGrid).join('')}</div></div>`;
   }
 }
 
