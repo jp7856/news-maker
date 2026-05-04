@@ -406,7 +406,8 @@ async function fetchTab(tab) {
       img:   cols[6]||'',
       url:   cols[7]||'',
       media: tab.key
-    }));
+    }))
+    .reverse(); // 최신 기사가 맨 위로
 }
 
 async function loadAll() {
