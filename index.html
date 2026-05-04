@@ -145,8 +145,7 @@ header{background:#fff;border-bottom:3px solid var(--red);padding:14px 20px}
 .state-icon{font-size:44px;margin-bottom:12px;opacity:.3}
 .state-title{font-size:18px;font-weight:700;color:var(--muted);margin-bottom:6px}
 .state-msg{font-size:13px;color:#aaa;line-height:1.8}
-footer{background:var(--navy);color:#7788aa;padding:24px 20px;text-align:center;font-size:12px}
-footer strong{color:#fff}
+
 </style>
 </head>
 <body>
@@ -232,9 +231,7 @@ footer strong{color:#fff}
   </div>
 </div>
 
-<footer>
-  <strong>JP_Times</strong> · Powered by JP © 2026
-</footer>
+
 
 <script>
 const TABS = [
@@ -407,7 +404,8 @@ async function fetchTab(tab) {
       url:   cols[7]||'',
       media: tab.key
     }))
-;
+    .reverse(); // 최신 기사가 맨 위로
+}
 
 async function loadAll() {
   all = [];
@@ -416,6 +414,7 @@ async function loadAll() {
     document.getElementById('spin-msg').textContent = `${tab.label} 불러오는 중...`;
     try {
       const rows = await fetchTab(tab);
+      rows.sort((a,b)=>(b.dc>a.dc?1:b.dc<a.dc?-1:0));
       all = all.concat(rows);
       document.getElementById('b-' + tab.key).textContent = rows.length;
     } catch(e) {
@@ -423,15 +422,6 @@ async function loadAll() {
       document.getElementById('b-' + tab.key).textContent = '!';
     }
   }
-  // 날짜 내림차순 → 같은 날짜면 매체 순서(kinder→kids→junior→times)
-  const mediaOrder = {kinder:0, kids:1, junior:2, times:3};
-  all.sort((a, b) => {
-    const dateA = a.dc || a.date || '';
-    const dateB = b.dc || b.date || '';
-    if (dateB > dateA) return 1;
-    if (dateB < dateA) return -1;
-    return (mediaOrder[a.media]||0) - (mediaOrder[b.media]||0);
-  });
   document.getElementById('b-all').textContent = all.length;
   document.getElementById('spin-area').style.display = 'none';
   render(all);
@@ -450,17 +440,11 @@ async function doUpload() {
     pb.style.width=`${Math.round((i/TABS.length)*90)}%`;
     try{
       const rows=await fetchTab(tab);
+      rows.sort((a,b)=>(b.dc>a.dc?1:b.dc<a.dc?-1:0));
       all=all.concat(rows); counts[tab.key]=rows.length; total+=rows.length;
       document.getElementById('b-'+tab.key).textContent=rows.length;
     }catch{counts[tab.key]=0;}
   }
-  // 날짜 내림차순 → 같은 날짜면 매체 순서
-  const mediaOrder={kinder:0,kids:1,junior:2,times:3};
-  all.sort((a,b)=>{
-    const da=a.dc||a.date||'', db=b.dc||b.date||'';
-    if(db>da)return 1; if(db<da)return -1;
-    return(mediaOrder[a.media]||0)-(mediaOrder[b.media]||0);
-  });
   document.getElementById('b-all').textContent=total;
   pb.style.width='100%'; pl.textContent='완료!';
   btn.disabled=false; btn.textContent='🔄 기사 업로드 (원클릭)';
