@@ -125,10 +125,10 @@ header{background:#fff;border-bottom:3px solid var(--red);padding:14px 20px}
 .grid-date{font-size:10px;color:#aaa;margin-top:6px}
 
 .list-wrap{background:#fff;border-top:2px solid var(--red)}
-.list-item{display:grid;grid-template-columns:100px 1fr;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;align-items:start}
+.list-item{display:grid;grid-template-columns:120px 1fr;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;align-items:start}
 .list-item:hover .list-title{color:var(--red)}
-.list-thumb{width:100px;aspect-ratio:4/3;object-fit:cover;border-radius:2px;display:block;background:#e8e8e8}
-.list-thumb-ph{width:100px;aspect-ratio:4/3;background:#e8eaf6;border-radius:2px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:16px}
+.list-thumb{width:120px;aspect-ratio:4/3;object-fit:cover;border-radius:2px;display:block;background:#e8e8e8}
+.list-thumb-ph{width:120px;aspect-ratio:4/3;background:#e8eaf6;border-radius:2px;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:16px}
 .list-title{font-size:14px;font-weight:700;line-height:1.4;color:var(--text);margin-bottom:5px;transition:color .15s}
 .list-body{font-size:12px;color:var(--muted);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px}
 .list-badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
@@ -538,10 +538,9 @@ function render(arts){
       (grid.length?`<div class="grid-wrap"><div class="grid-3">${grid.map(mkGrid).join('')}</div></div>`:'')+
       (list.length?`<div class="list-wrap">${list.map(mkList).join('')}</div>`:'');
   } else {
-    // 날짜 내림차순 정렬
     const sorted=[...arts].sort((a,b)=>b.date>a.date?1:b.date<a.date?-1:0);
     wrap.innerHTML=
-      `<div class="grid-wrap"><div class="grid-3">${sorted.map(mkGrid).join('')}</div></div>`;
+      `<div class="list-wrap">${sorted.map(mkList).join('')}</div>`;
   }
 }
 
